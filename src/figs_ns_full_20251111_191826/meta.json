@@ -1,0 +1,19 @@
+{
+  "F_target": 2.0943951023931953,
+  "eps_weight": 0.0,
+  "eps_alpha": 0.45,
+  "Delta": [
+    0.01,
+    0.0,
+    -0.01
+  ],
+  "family": "memory",
+  "gamma": 0.55,
+  "K_min": 1.1,
+  "K_max": 2.1,
+  "K_pts": 26,
+  "T": 40000,
+  "burn": 30000,
+  "seed": 1,
+  "phase_noise_std": 0.0
+}

@@ -1,0 +1,24 @@
+{
+  "topology": "quat_sym",
+  "scheme": "explicit",
+  "dt": 0.09999,
+  "gamma": 0.0962,
+  "directed": true,
+  "eps_asym": 0.0327,
+  "deg_norm": true,
+  "w_diag": 0.15,
+  "sigma2": 0.0,
+  "triad_phi": 0.0,
+  "near2": 0.05,
+  "K_min": 0.5,
+  "K_max": 8.0,
+  "K_pts": 120,
+  "pairs": [
+    {
+      "pair_index": 3,
+      "K_star": 1.1986814833435953,
+      "rho_star": 1.0000000000000588,
+      "ang_star": 0.11337986237520896
+    }
+  ]
+}

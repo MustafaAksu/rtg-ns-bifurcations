@@ -1,0 +1,2 @@
+Lyapunov exponents (per step):
+  LE_1 ~= 8.660480e-17

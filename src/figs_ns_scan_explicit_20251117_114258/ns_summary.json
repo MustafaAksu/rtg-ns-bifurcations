@@ -1,0 +1,15 @@
+{
+  "family": "inertial",
+  "scheme": "explicit",
+  "dt": 0.1,
+  "gamma": 0.3,
+  "directed": true,
+  "eps_asym": 0.2,
+  "deg_norm": false,
+  "K_lo": 0.9384230287859825,
+  "K_hi": 0.9783479349186482,
+  "K_star": 0.9600936816149426,
+  "rho_star": 1.0000000000000653,
+  "angle_star": 0.17342232109597844,
+  "drho_dK_at_star": 0.015623475385084795
+}

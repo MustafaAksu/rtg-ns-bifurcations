@@ -1,0 +1,11 @@
+Family: memory
+Refine→ K*=2.020000, rho=0.994175, ang=+0.4887 rad, label=NS-candidate
+At K* flux mean = -2.094395 rad; <0.5 Tr(H)> = 0.500000; cos(F/2) = 0.500000
+
+Interpretation:
+- If label=='NS-candidate' with |rho-1| small and angle not 0/π → clean NS.
+- If label=='flip-like' → period-doubling (real negative multiplier) precedes NS.
+- If 'no-crossing' and rho<<1 across K → fixed point remains contracting on this family.
+
+Note: Noise is OFF by default. You generally do not need noise for NS;
+      it can help probe basins (set --phase_noise_std ~ 1e-3 to 1e-2) but it is optional.

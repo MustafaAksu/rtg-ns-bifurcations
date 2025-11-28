@@ -1,0 +1,5 @@
+Largest Lyapunov exponents (per step):
+  LE_1 ~= -9.835586e-08
+  LE_2 ~= -1.187987e-04
+  LE_3 ~= -1.168854e-04
+  LE_4 ~= -2.055785e-04

@@ -1,0 +1,34 @@
+{
+  "K_run": 0.24052455240519202,
+  "r_mean": 0.931417414233591,
+  "r_std": 0.015162935533534955,
+  "f_peak_per_step": 0.031308888888888886,
+  "kstars_path": "figs_k4_quat_explicit_20251124_133500\\k4_kstars.json",
+  "Kstars": {
+    "pairs": {
+      "pair1": {
+        "pair_index": 1,
+        "K_star": 0.24047667454800126,
+        "rho": 0.999999999999999,
+        "angle_rad": 0.08858194640021491,
+        "freq_cycles_per_step": 0.014098254638295527
+      },
+      "pair2": {
+        "pair_index": 2,
+        "K_star": 0.24052405240519203,
+        "rho": 1.0000000000000004,
+        "angle_rad": 0.09811604555482381,
+        "freq_cycles_per_step": 0.015615653646679795
+      }
+    },
+    "double_ns_candidate": {
+      "pairA": 1,
+      "pairB": 2,
+      "K_star_A": 0.24047667454800126,
+      "K_star_B": 0.24052405240519203,
+      "deltaK": 4.737785719077792e-05,
+      "winding_ratio_lin": 0.9028283386198889
+    }
+  },
+  "winding_lin": 0.9028283386198889
+}

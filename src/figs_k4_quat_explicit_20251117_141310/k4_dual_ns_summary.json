@@ -1,0 +1,36 @@
+{
+  "K_lo": 1.1054794520547946,
+  "K_hi": 1.108219178082192,
+  "K_star": 1.105479452178682,
+  "pair1": {
+    "rho": 1.003566926192788,
+    "angle": 0.17917992480703182
+  },
+  "pair2": {
+    "rho": 1.0008092615914115,
+    "angle": 0.16326714070510925
+  },
+  "params": {
+    "scheme": "explicit",
+    "dt": 0.1,
+    "gamma": 0.25,
+    "directed": true,
+    "eps_asym": 0.25,
+    "deg_norm": false,
+    "sigma2": -0.22,
+    "triad_phi": 0.0,
+    "K_min": 1.1,
+    "K_max": 1.7,
+    "K_pts": 220,
+    "ang_tol": 0.08,
+    "near2": 0.05,
+    "outdir": null,
+    "post": true,
+    "deltaK": 0.03,
+    "T": 60000,
+    "burn": 30000,
+    "noise": 1e-06,
+    "lyap_demo": true,
+    "le_q": 4
+  }
+}

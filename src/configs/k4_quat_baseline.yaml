@@ -1,0 +1,32 @@
+family: inertial
+scheme: explicit
+
+# Time stepping
+dt: 0.09999
+gamma: 0.09620
+
+# Topology / weights
+topology: quat_sym
+directed: true
+eps_asym: 0.0327
+deg_norm: false
+
+w_diag: 2.6220000
+sigma2: -0.091384
+triad_phi: 2.09480   # ~ 2π/3
+
+# Bifurcation info (from k4_kstars.json)
+K1_star: 0.2404766745480162
+K2_star: 0.24052405240517644
+deltaK:  4.7377857160246784e-05
+rho_lin: 0.9028283386199428
+
+# Nonlinear reference run
+K_run:  0.24052455240517642   # = K2_star + 5e-7
+r_mean: 0.9314187189638266
+r_std:  0.015162903617993162
+f_peak_per_step: 0.03130666666666666
+
+# Lyapunov (for documentation)
+LE1: 7.132262e-10
+LE2: 6.332061e-08

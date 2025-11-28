@@ -1,0 +1,39 @@
+{
+  "topology": "quat_sym",
+  "scheme": "explicit",
+  "dt": 0.09999,
+  "gamma": 0.0962,
+  "directed": true,
+  "eps_asym": 0.0327,
+  "deg_norm": false,
+  "w_diag": 2.622,
+  "sigma2": -0.091384,
+  "triad_phi": 2.0948,
+  "near2": 0.03,
+  "K_min": 0.2398,
+  "K_max": 0.2412,
+  "K_pts": 30000,
+  "pairs": [
+    {
+      "pair_index": 1,
+      "K_star": 0.24047667454800126,
+      "rho_star": 0.999999999999999,
+      "ang_star": 0.08858194640021491
+    },
+    {
+      "pair_index": 2,
+      "K_star": 0.24052405240519203,
+      "rho_star": 1.0000000000000004,
+      "ang_star": 0.09811604555482381
+    }
+  ],
+  "double_ns": {
+    "pairA": 1,
+    "pairB": 2,
+    "K_star_A": 0.24047667454800126,
+    "K_star_B": 0.24052405240519203,
+    "deltaK": 4.737785719077792e-05,
+    "within_near2": true,
+    "angle_ratio_B_over_A": 1.1076302739108221
+  }
+}
