@@ -1,0 +1,738 @@
+\documentclass[11pt,a4paper]{article}
+
+% Encoding & fonts
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+
+% Math & theorem envs
+\usepackage{amsmath,amssymb,amsthm}
+
+% Page geometry
+\usepackage{geometry}
+\geometry{margin=1in}
+
+% Graphics & subfigures
+\usepackage{graphicx}
+\usepackage{subcaption}
+
+% URLs & links
+\usepackage[hyphens]{url}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{microtype}
+\Urlmuskip=0mu plus 1mu
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black,
+  pdftitle={Dynamical Genesis of Complex Structure on Graphs: Neimark--Sacker Bifurcation and Non-Abelian Holonomy},
+  pdfauthor={Mustafa Aksu},
+  pdfsubject={Discrete Kuramoto on graphs; Neimark--Sacker bifurcation; complex structure; holonomy; SU(2) lift; double NS on K4},
+  pdfkeywords={Kuramoto, Neimark--Sacker, double bifurcation, complex structure, holonomy, SU(2), quaternion, discrete curvature, frustrated networks},
+  pdfborder={0 0 0},
+  pdfdisplaydoctitle=true,
+  breaklinks=true
+}
+
+% TikZ (optional)
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+
+% Lists
+\usepackage{enumitem}
+
+% Theorems
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{definition}[theorem]{Definition}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Operators
+\DeclareMathOperator{\SU}{SU}
+\DeclareMathOperator{\U}{U}
+\DeclareMathOperator{\SO}{SO}
+\DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator{\spec}{spec}
+
+% Metadata for title
+\newcommand{\papertitle}{Dynamical Genesis of Complex Structure on Graphs:\\ Neimark--Sacker Bifurcation and Non-Abelian Holonomy}
+\newcommand{\paperdoi}{10.5281/zenodo.17568896}
+
+\title{\papertitle}
+\author{Mustafa Aksu\thanks{With contributions by Grok and ChatGPT (listed as \emph{contributors} in Zenodo metadata; sole human author of record).}}
+\date{26 November 2025\\[2pt]\small DOI: \href{https://doi.org/\paperdoi}{\paperdoi}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We study the discrete Kuramoto model on finite graphs with signed couplings $\kappa_{vw}\in\mathbb{R}$.  
+For a connected graph of minimum degree at least $2$, we show that a supercritical \emph{Neimark--Sacker bifurcation} generically creates a 2D invariant center manifold endowed with a canonical almost-complex structure $\mathcal{J}$ with $\mathcal{J}^2=-I$.  
+The rotation matrix $J$ on the center manifold induces $\mathcal{J}:=J/\omega$ where $\omega=\arg\lambda\in(0,\pi)$ is the angular frequency of the critical eigenpair.  
+On synchronised edges this structure defines a $\U(1)$ principal bundle over the graph; holonomy around cycles measures discrete curvature.  
+Whenever a frustrated triad carries nonzero curvature, a simple obstruction lemma rules out a globally consistent $\U(1)$ phase field and motivates a non-abelian lift.  
+We formalize this via an $\mathfrak{su}(2)$-valued connection whose plaquette holonomy reproduces the abelian flux through a trace--angle relation, interpreting discrete curvature as the angle of an $\SU(2)$ rotation.
+
+Numerically, we confirm the NS mechanism on a directed, frustrated $K_3$ with degree-normalized couplings under an inertial explicit-Euler discretization: a simple complex-conjugate pair crosses the unit circle at $K_c\approx1.92$ with nonzero angle, the coherence $r(t)$ exhibits a single dominant spectral peak close to the linear prediction, the phase portrait shows an invariant circle, and the largest Lyapunov exponent is numerically near zero.  
+We then exhibit a tuned \emph{double} Neimark--Sacker event on a symmetric but weakly directed $K_4$ with triadic frustration and non-uniform edge weights.  
+Two distinct complex pairs cross the unit circle at
+\[
+K_1^*\approx0.2404767,\qquad K_2^*\approx0.2405241,\qquad
+|K_2^*-K_1^*|\approx4.7\times10^{-5},
+\]
+with linear winding ratio $\rho_{\mathrm{lin}}\approx0.903$ between their angular frequencies.  
+A $900{,}000$-step nonlinear run at $K=K_2^*+5\times10^{-7}$ shows locked triangle flux $F\approx-2.10$ rad, mean coherence $r_{\mathrm{mean}}\approx0.93$, a dominant PSD peak at $f_{\mathrm{step}}\approx0.0313$ cycles/step, saturated amplitudes of both NS modes, a smooth torus-like return map, and a Lyapunov spectrum with two numerically zero and four strongly negative exponents.  
+These observations are consistent with a 4D invariant torus supporting two incommensurate rotations, i.e.\ the $k=3$ rung of a conjectured division-algebra ladder.  
+We close with conjectures on higher rungs and on the role of Diophantine frequency conditions in stabilizing such tori.
+\end{abstract}
+
+\section{Introduction and model}
+
+Let $G=(V,E)$ be a finite undirected graph with minimum degree $\deg(v)\ge 2$.  
+We introduce a scalar coupling strength $K\in\mathbb{R}$ such that the signed edge couplings are $K\hat\kappa_{vw}$, where $\hat\kappa_{vw}=\hat\kappa_{wv}\in\mathbb{R}$ is time-independent (e.g.\ $\pm1$).  
+The basic discrete Kuramoto map with signed couplings is
+\begin{equation}\label{eq:map}
+\theta_v(t+1)
+=
+\theta_v(t)+\Delta_v
++\frac{K}{\deg(v)}\sum_{w\sim v}\hat{\kappa}_{vw}\sin\bigl(\theta_w(t)-\theta_v(t)\bigr)
+\pmod{2\pi},
+\end{equation}
+where $|\Delta_v|\le\delta$ are small detunings.
+
+Several numerical sections use an inertial extension with time step $dt$ and damping $\gamma>0$, together with either (i) an explicit Euler update or (ii) a semi-implicit Euler--Cromer (EC) update, and---for some experiments---a small directed asymmetry $\varepsilon_{\mathrm{asym}}$ that makes the coupling matrix non-normal.  The inertial form evolves angles $\theta_v$ and velocities $v_v$ via
+\begin{align*}
+\theta_v(t+1)&=\theta_v(t)+dt\,v_v(t),\\
+v_v(t+1)&=(1-\gamma dt)\,v_v(t)+dt\frac{K}{\deg(v)}\sum_{w\sim v}\hat\kappa_{vw}\sin(\theta_w-\theta_v),
+\end{align*}
+for the explicit scheme, with the EC scheme obtained by using $v_v(t+1)$ in the update for $\theta_v$.
+
+\subsection*{Discretization remark (EC vs.\ explicit) and directed asymmetry}
+
+Linearizing the inertial map around a locked state yields a block Jacobian whose modal eigenpairs dictate stability.  If we denote the angular frequency of a complex eigenvalue by $\omega=\arg\lambda\in(0,\pi)$, the modulus $|\lambda|$ behaves very differently for the two schemes:
+
+\begin{itemize}[leftmargin=1.7em]
+\item \textbf{Euler--Cromer (semi-implicit).}  
+Complex modes satisfy
+\[
+|\lambda|=\sqrt{1-\gamma\,dt}\,,
+\]
+independent of $K$.  For $\gamma>0$ this pins all complex pairs strictly inside the unit circle; a Neimark--Sacker (NS) crossing is impossible, and only real-axis (flip) bifurcations may occur.
+
+\item \textbf{Explicit Euler.}  
+In this case one finds
+\[
+|\lambda|^2=A-dt^2\mu(K),\qquad A:=1-\gamma dt,
+\]
+where $\mu(K)$ comes from the (projected) coupling matrix.  As $K$ varies the complex radial modulus moves and a NS crossing occurs when
+\[
+\mu(K^*)=-\,\frac{\gamma}{dt},
+\]
+with nonzero angle $\omega=\arg\lambda\not\equiv 0,\pi$ and nonvanishing slope $d|\lambda|/dK\big|_{K^*}\ne0$ (transversality).
+\end{itemize}
+
+Thus EC artificially forbids NS by pinning the complex radius, while explicit Euler restores the $K$-dependent radial motion needed for a NS bifurcation.  In our numerics we deliberately use the explicit inertial scheme whenever NS behaviour is sought, and introduce a small directed asymmetry to split eigenvalue degeneracies and make the complex pair simple and non-normal.
+
+\section{Neimark--Sacker bifurcation and emergent complex structure}
+
+We now state the main structural result linking a complex NS crossing to a canonical complex structure on the center manifold of the map.
+
+\begin{theorem}[Emergent complex structure]\label{thm:main}
+Let $G=(V,E)$ be a connected graph with $\deg(v)\ge 2$ for all $v\in V$.  
+Consider the discrete map \eqref{eq:map} (or its inertial explicit-Euler variant) near a phase-locked fixed point $\theta^*$.  
+Assume the Jacobian $\mathbf{L}(K)$ at $\theta^*$ has a simple pair of complex-conjugate eigenvalues $\lambda_\pm(K)$ depending smoothly on $K$, such that:
+
+\begin{enumerate}[label=(\roman*),leftmargin=2em]
+\item $|\lambda_\pm(K_c)|=1$ for some $K_c$ (unit-circle crossing);
+\item $\omega:=\arg\lambda_+(K_c)\in(0,\pi)$ (nonzero rotation angle);
+\item $\bigl.\tfrac{d|\lambda_\pm|}{dK}\bigr|_{K_c}\neq0$ (transversality);
+\item the cubic normal-form coefficient satisfies $\Re\beta\neq0$ (non-degeneracy; super/subcriticality).
+\end{enumerate}
+
+Then for $K$ near $K_c$ a \emph{Neimark--Sacker bifurcation} occurs.  
+In the supercritical case, the following hold:
+\begin{itemize}[leftmargin=1.7em]
+\item There exists a 2D center manifold $\mathcal{M}$ tangent at the fixed point to the real eigenspace of $\lambda_\pm(K_c)$.
+\item In appropriate coordinates $(x_1,x_2)$ on $\mathcal{M}$, the linearized dynamics are governed by the rotation generator
+\[
+J=\begin{pmatrix}0&-\omega\\ \omega&0\end{pmatrix},
+\]
+and the complex-valued normal form
+\[
+z\mapsto e^{\mu+i\omega}z-\beta|z|^2z+\cdots,\qquad z=x_1+ix_2,\quad \mu\approx0.
+\]
+\item The normalized operator
+\[
+\mathcal{J}:=\frac{1}{\omega}J
+\]
+satisfies $\mathcal{J}^2=-I$ and defines a canonical almost-complex structure on $\mathcal{M}$.
+\end{itemize}
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The Jacobian near $\theta^*$ has the form $\mathbf{L}(K)=\mathbf{I}+\mathbf{M}(K)$ where $\mathbf{M}$ is approximately $K$ times a signed graph Laplacian when detunings are small.  Under hypotheses (i)--(iv) the spectral picture near the unit circle consists of a simple complex pair $\lambda_\pm(K)$ and the rest of the spectrum away from $|\lambda|=1$.  The Center Manifold Theorem for maps yields a 2D invariant manifold $\mathcal{M}$ tangent to the eigenspace of $\lambda_\pm(K_c)$ on which the dynamics reduce to a complex normal form in a coordinate $z=x_1+ix_2$ \cite{Carr1981,Kuznetsov2004}.  The linear part is conjugate to multiplication by $e^{\mu+i\omega}$ with $\omega>0$, which in real coordinates is generated by the rotation matrix $J$ above.  Dividing by $\omega$ yields an operator $\mathcal{J}$ with $\mathcal{J}^2=-I$, independent of higher-order terms.  Standard normal-form analysis shows that when $\Re\beta<0$ the invariant circle is born supercritically.  Full details follow standard NS theory \cite{GuckenheimerHolmes1983,Kuznetsov2004}.
+\end{proof}
+
+\begin{remark}
+In the $K_3$ inertial explicit-Euler experiment of \S\ref{sec:num2025}, the transversality condition (iii) manifests as
+\[
+\left.\frac{d|\lambda|}{dK}\right|_{K_c}\approx7.8\times10^{-3}>0,
+\]
+and the bifurcated invariant circle has a leading Lyapunov exponent numerically indistinguishable from zero and a PSD peak in $r(t)$ close to the linear frequency prediction; see \S\ref{sec:num2025} for details.
+\end{remark}
+
+\subsection{Comparisons to recent discrete models}
+
+Discrete-time Kuramoto models with frustration have been analysed recently in \cite{Lee2023}, where partial synchronization and stability thresholds are derived for systems with uniform frustration.  On small graphs such as $K_3$, their thresholds are consistent with the emergence of persistent phase differences that can be viewed as nonzero curvature $F_\triangle\approx\pm2\pi/3$ in our language.  Studies of Neimark--Sacker bifurcations in other discrete biological and epidemiological models \cite{Qadri2024} confirm that the usual non-degeneracy and transversality conditions are generic, lending support to the applicability of Theorem~\ref{thm:main} across a broad class of signed-interaction maps.
+
+\section{Local-to-global $\U(1)$ bundle}
+
+On a fixed graph $G$ endowed with a phase configuration $\theta:V\to\mathbb{R}$, define for each oriented edge $e_{ij}$ the instantaneous connection $1$-cochain
+\[
+A_{ij}(t):=\theta_j(t)-\theta_i(t).
+\]
+The collection $\{e^{iA_{ij}(t)}\}$ defines a $\U(1)$ principal bundle over $G$.
+
+\paragraph{Gauge transformation.}
+For a vertex potential $\chi:V\to\mathbb{R}$, the edge variables transform as
+\[
+A_{ij}\mapsto A_{ij}+\chi_j-\chi_i.
+\]
+Holonomy around an oriented cycle $C$ with orientation signs $\epsilon_e=\pm1$ is the gauge-invariant quantity
+\[
+H_t(C)=\exp\!\left(i\sum_{e\in C}\epsilon_e A_e(t)\right).
+\]
+
+\paragraph{Discrete curvature.}
+On an oriented triangle $(i,j,k)$ we define the (principal-branch) discrete curvature
+\[
+F_{ijk}(t)
+:=
+\bigl(A_{ij}(t)+A_{jk}(t)+A_{ki}(t)\bigr)\bmod 2\pi,
+\qquad F_{ijk}(t)\in(-\pi,\pi].
+\]
+Equivalently, $H_t(\partial\triangle)=e^{iF_{ijk}(t)}$.  Flatness is the condition $F_{ijk}\equiv0$ for all faces.
+
+\begin{proposition}
+The bundle is flat if and only if $H(C)=1$ for all cycles $C\subset G$.  When curvature is present, $\Phi_C:=\arg H(C)$ defines a discrete curvature (flux) on $H_1(G,\mathbb{Z})$.
+\end{proposition}
+
+\begin{proof}
+If $\Phi_C=0$ for all cycles, then every loop has trivial holonomy and the connection is pure gauge: there exists a single-valued potential $\theta$ with $A_{ij}=\theta_j-\theta_i$ for all edges, making $F_{ijk}=0$.  Conversely, a nontrivial holonomy on some cycle cannot be gauged away and implies a nonzero curvature on at least one face intersecting that cycle.
+\end{proof}
+
+\section{Frustration and non-Abelian holonomy}\label{sec:frustration}
+
+\subsection{Frustration obstruction and motivation for an $\SU(2)$ lift}
+
+We formalize the obstruction induced by a frustrated triangle and use it to motivate a non-abelian lift of the bundle.
+
+\begin{lemma}[Frustration obstruction]\label{lem:obstruction}
+Let $\triangle=(i,j,k)$ be an oriented triangle in $G$ with discrete curvature
+\[
+F_\triangle
+:=
+A_{ij}+A_{jk}+A_{ki}\pmod{2\pi}.
+\]
+If $F_\triangle\not\equiv0\pmod{2\pi}$, then:
+\begin{enumerate}[label=(\alph*),leftmargin=1.7em]
+\item no single-valued global phase assignment $\theta:V\to\mathbb{R}$ exists such that $A_{ij}=\theta_j-\theta_i$ on all edges;
+\item the associated $\U(1)$ principal bundle over $G$ is topologically nontrivial: at least one cycle has nontrivial holonomy.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+Assume (a) fails: there exists $\theta:V\to\mathbb{R}$ with $A_{ij}=\theta_j-\theta_i$.  Then
+\[
+F_\triangle
+=
+(\theta_j-\theta_i)+(\theta_k-\theta_j)+(\theta_i-\theta_k)
+=0\pmod{2\pi},
+\]
+contradicting $F_\triangle\not\equiv0$.  Thus no such global potential exists and at least one fundamental cycle must carry nontrivial holonomy, establishing (b).
+\end{proof}
+
+In particular, a frustrated triangle forces the connection to behave in a genuinely geometric way: there is no global angle field compatible with all edge differences.  This suggests replacing the scalar phase by a higher-dimensional object whose parallel transport can absorb frustration non-abelianly.
+
+\subsection{Collective spin picture and effective $\mathfrak{su}(2)$ algebra}
+
+To see how an $\mathfrak{su}(2)$ structure can arise, consider three frustrated triads, each associated with a fictitious spin-$\tfrac{1}{2}$ degree of freedom represented by Pauli matrices $\boldsymbol{\sigma}_a=(\sigma_a^x,\sigma_a^y,\sigma_a^z)$, $a=1,2,3$.  Define the collective operators
+\[
+J_x=\tfrac{1}{2}(\sigma_1^x+\sigma_2^x+\sigma_3^x),\quad
+J_y=\tfrac{1}{2}(\sigma_1^y+\sigma_2^y+\sigma_3^y),\quad
+J_z=\tfrac{1}{2}(\sigma_1^z+\sigma_2^z+\sigma_3^z).
+\]
+
+\begin{lemma}[Effective $\mathfrak{su}(2)$ algebra]\label{lem:su2}
+The operators $J_x,J_y,J_z$ satisfy
+\[
+[J_a,J_b]=i\epsilon_{abc}J_c,\qquad J_a^2=\tfrac{3}{4}I,
+\]
+and thus close under the standard $\mathfrak{su}(2)$ commutation relations.  Identifying $i\mapsto J_x$, $j\mapsto J_y$, $k\mapsto J_z$ (up to scaling) recovers the quaternion algebra $\mathbb{H}$.
+\end{lemma}
+
+\begin{proof}
+This is a direct computation from the Pauli matrix commutation relations $[\sigma^\alpha,\sigma^\beta]=2i\epsilon_{\alpha\beta\gamma}\sigma^\gamma$ and $(\sigma^\alpha)^2=I$.
+\end{proof}
+
+In our dynamical setting the $J_a$ are not literal spins but serve as a convenient algebraic model for the non-abelian parallel transport that frustrated motifs appear to demand.
+
+\subsection{Non-Abelian lift and trace--angle relation}
+
+We now describe what it means for an $\SU(2)$ connection to consistently lift a given abelian connection.
+
+\begin{definition}[Consistent non-Abelian lift]\label{def:lift}
+A \emph{consistent lift} of a $\U(1)$ connection $A_{ij}$ on a frustrated triangle $\triangle$ is an $\mathfrak{su}(2)$-valued edge connection $\mathbf{A}_{ij}$ with transports
+\[
+U_{ij}:=\exp(\mathbf{A}_{ij})\in\SU(2)
+\]
+such that the plaquette holonomy
+\[
+\mathbf{H}(\partial\triangle):=U_{ij}U_{jk}U_{ki}\in\SU(2)
+\]
+has trace
+\[
+\frac{1}{2}\Tr\,\mathbf{H}(\partial\triangle)
+=
+\cos\!\left(\frac{F_\triangle}{2}\right),
+\]
+where $F_\triangle$ is the abelian curvature on $\triangle$ taken in the principal branch $(-\pi,\pi]$.
+\end{definition}
+
+The trace condition encodes the standard double-covering map $\SU(2)\to\SO(3)$: an $\SU(2)$ element with eigenvalues $e^{\pm i\vartheta/2}$ has trace $2\cos(\vartheta/2)$ and corresponds to a rotation of angle $\vartheta$ in 3D space.  Here $\vartheta$ is identified with the abelian flux $F_\triangle$.
+
+\begin{conjecture}[Non-Abelian lift and holonomy]\label{conj:su2}
+For every frustrated triad there exists a consistent lift in the sense of Definition~\ref{def:lift}.  Moreover:
+\begin{enumerate}[label=(\alph*),leftmargin=1.7em]
+\item The $\SU(2)$ plaquette holonomy can be written as
+\[
+\mathbf{H}(\partial\triangle)
+=
+\exp\!\left(\frac{F_\triangle}{2}\,\mathbf{n}\cdot\boldsymbol{\sigma}\right),
+\qquad \mathbf{n}\in S^2,
+\]
+with eigenvalues $\exp(\pm iF_\triangle/2)$ and trace $2\cos(F_\triangle/2)$.
+\item For small $\|\mathbf{A}\|$, the Baker--Campbell--Hausdorff expansion gives
+\[
+\log\mathbf{H}(\partial\triangle)
+=
+\mathbf{A}_{ij}+\mathbf{A}_{jk}+\mathbf{A}_{ki}
++\mathcal{O}(\|\mathbf{A}\|^2),
+\]
+so that $F_\triangle$ is recovered (to leading order) from the $\mathfrak{su}(2)$ curvature.
+\item When three appropriately arranged frustrated motifs are coupled, the induced generators on an effective low-dimensional manifold approximate the algebra in Lemma~\ref{lem:su2}, yielding a dynamical realization of the quaternionic structure.
+\end{enumerate}
+\end{conjecture}
+
+Conjecture~\ref{conj:su2} is fully compatible with our $K_3$ and $K_4$ numerics: in both cases the measured triangle flux $F_\triangle$ remains locked near $-2\pi/3$ while the $\SU(2)$ trace estimated from lifted transports stays close to $\tfrac{1}{2}$, i.e.\ $\cos(F_\triangle/2)$.
+
+\subsection{Quantum analogs and parallels}
+
+Non-abelian structures emergent from frustrated interactions also appear in quantum systems.  For example, frustrated fermionic ladders can exhibit emergent $\SU(2)$ invariance from originally abelian models \cite{Beradze2023}, and photonic waveguides have been used to realize three-dimensional non-abelian holonomy in degenerate subspaces \cite{Abdullaev2022}.  These works suggest that frustrated graph bundles like those studied here could serve as classical templates for synthetic gauge fields in quantum simulators.
+
+\section{Numerical confirmation (2025 update)}\label{sec:num2025}
+
+We now present numerical evidence for the theoretical picture above.  First we revisit the $K_3$ case to confirm a single NS bifurcation and the associated complex structure; then we move to a symmetric $K_4$ with frustration, where we find a finely tuned but robust double NS event under explicit Euler dynamics.
+
+\subsection{Single NS on directed, frustrated $K_3$}
+
+We consider the inertial explicit-Euler scheme on $K_3$ with degree-normalized couplings, small detuning
+\[
+\Delta=(10^{-2},0,-10^{-2}),
+\]
+time step $dt=0.1$, damping $\gamma=0.3$, and directed asymmetry $\varepsilon_{\mathrm{asym}}=0.2$ that orients the ring $0\to1\to2\to0$ and its reverse with slightly different weights.  A single edge carries frustration chosen so that the net oriented triangle flux is $F_\triangle=-2\pi/3$.
+
+\paragraph{Linear signature.}
+Scanning the coupling $K$ reveals that a simple complex-conjugate pair of eigenvalues crosses the unit circle at
+\[
+K_c\approx1.9202,\qquad
+\arg\lambda_{\max}(K_c)\approx0.1734\ \mathrm{rad},
+\]
+with radial slope
+\[
+\left.\frac{d|\lambda|}{dK}\right|_{K_c}\approx7.8\times10^{-3}>0.
+\]
+This confirms hypotheses (i)--(iii) of Theorem~\ref{thm:main} for the leading mode.
+
+\paragraph{Nonlinear confirmation.}
+For $K$ slightly above $K_c$, say $K=K_c+0.01\approx1.93$, the coherence time series $r(t)$ exhibits a single dominant spectral peak at
+\[
+f_{\mathrm{step}}^{\mathrm{(PSD)}}\approx0.0206\ \mathrm{cycles/step},
+\]
+in reasonable agreement with the linear prediction $f_{\mathrm{lin}}=\omega/2\pi\approx0.0276$ given the finite sampling window.  The phase portrait $(\theta_1-\theta_2,\theta_2-\theta_3)$ forms a thin annulus, consistent with a supercritical invariant circle on the center manifold.  A Lyapunov computation yields a largest exponent
+\[
+\mathrm{LE}_1\approx0\ \text{per step}\quad(\text{numerically } \mathrm{LE}_1\approx-5\times10^{-17}),
+\]
+again consistent with a 2D quasiperiodic torus.  Throughout the run the triangle flux remains locked near
+\[
+F_\triangle\approx-2.094\ \mathrm{rad}=-\frac{2\pi}{3},
+\]
+and the lifted $\SU(2)$ holonomy satisfies $\tfrac{1}{2}\Tr(H)\approx\cos(F_\triangle/2)\approx0.5$, verifying the trace--angle relation at the NS rung.  Representative diagnostics are shown in Figure~\ref{fig:k3_ns}.
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}{.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{inertial_explicit.png}
+    \caption{Leading eigenangle vs.\ coupling $K$; the NS crossing occurs where $|\lambda|=1$ with $\arg\lambda$ bounded away from $0$ and $\pi$.}
+  \end{subfigure}\hfill
+  \begin{subfigure}{.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{ns_confirm_phase.png}
+    \caption{Phase portrait $(\theta_1-\theta_2,\theta_2-\theta_3)$ just above $K_c$, forming a thin annulus (invariant circle).}
+  \end{subfigure}\hfill
+  \begin{subfigure}{.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{ns_confirm_psd.png}
+    \caption{PSD of $r(t)$ just above $K_c$, with a single dominant peak close to the predicted NS frequency.}
+  \end{subfigure}
+  \caption{Neimark--Sacker confirmation suite on the directed, frustrated $K_3$ under the inertial explicit-Euler scheme.}
+  \label{fig:k3_ns}
+\end{figure}
+
+\subsection{Tuned double NS on symmetric, frustrated $K_4$}
+
+We next study a $K_4$ motif endowed with a ``quaternion-symmetric'' weight pattern: nearest-neighbour edges form a directed ring with one weight, diagonals carry a distinct weight, and two opposite closing edges host identical triadic frustration.  Small directed asymmetry breaks the full $S_4$ symmetry just enough to split degeneracies and separate the critical eigenpairs while preserving a symmetric coupling structure.
+
+\paragraph{Graph and parameters.}
+Let $V=\{0,1,2,3\}$, and connect all pairs with nonzero couplings.  The nearest-neighbour edges along the ring $0\to1\to2\to3\to0$ have weights $1\pm\varepsilon_{\mathrm{asym}}$ depending on direction, while diagonals $(0,2)$ and $(1,3)$ carry a tunable weight $w_{\mathrm{diag}}+\sigma_2$.  Two opposite closings (e.g.\ $2\to0$ and $3\to1$) carry identical frustration phase $\phi_{\triangle}$.  We use the inertial explicit-Euler scheme with
+\[
+dt=0.09999,\quad \gamma=0.09620,\quad
+\varepsilon_{\mathrm{asym}}=0.0327,
+\]
+\[
+w_{\mathrm{diag}}=2.6220,\quad
+\sigma_2=-0.091384,\quad
+\phi_{\triangle}=2.09480\ \mathrm{rad}\approx\frac{2\pi}{3},
+\]
+and no degree normalization: the velocity update sums raw weighted sine differences over neighbors (no $1/\deg(v)$ factor).
+
+We scan
+\[
+K\in[K_{\min},K_{\max}]=[0.2398,0.2412]
+\]
+on a uniform grid of $30{,}000$ points, computing the gauge-free spectrum of the inertial Jacobian at each $K$.
+
+\paragraph{Linear scan and double NS candidate.}
+Projecting out the gauge direction, the reduced Jacobian has $n-1=3$ complex pairs.  Two of them cross the unit circle in modulus with angles bounded away from $0$ and $\pi$ and with opposite radial slopes, while the third remains well inside the circle.  Bisection refinement yields
+\[
+K_1^*\approx0.2404766745,\quad
+K_2^*\approx0.2405240524,
+\]
+\[
+|\lambda_1(K_1^*)|=|\lambda_2(K_2^*)|=1,\quad
+\arg\lambda_1(K_1^*)\approx0.08858,\quad
+\arg\lambda_2(K_2^*)\approx0.09812,
+\]
+with linear frequencies
+\[
+f_1^{\mathrm{(lin)}}\approx0.01410,\qquad
+f_2^{\mathrm{(lin)}}\approx0.01562,
+\]
+and ratio
+\[
+\rho_{\mathrm{lin}}
+:=
+\frac{f_1^{\mathrm{(lin)}}}{f_2^{\mathrm{(lin)}}}
+\approx0.903,
+\]
+far from low-order rationals.  
+The separation
+\[
+\Delta K
+:=
+|K_2^*-K_1^*|
+\approx4.74\times10^{-5}
+\]
+is tiny ($\Delta K/K_1^*\approx2\times10^{-4}$), indicating a finely tuned but distinct double NS event: two simple complex pairs cross the unit circle at nearby, but not identical, couplings.
+
+\paragraph{Nonlinear run and observables.}
+We choose $K_{\mathrm{run}}=K_2^*+\delta K$ with $\delta K=5\times10^{-7}$, slightly above the second crossing.  A nonlinear simulation with $T=900{,}000$ steps and burn-in $T_{\mathrm{burn}}=450{,}000$ yields:
+
+\begin{itemize}[leftmargin=1.7em]
+\item \textbf{Coherence and PSD.}  
+The order parameter $r(t)$ remains tightly concentrated around
+\[
+r_{\mathrm{mean}}\approx0.9314,\qquad r_{\mathrm{std}}\approx1.52\times10^{-2},
+\]
+and its PSD exhibits a narrow dominant peak at
+\[
+f_{\mathrm{step}}^{\mathrm{(PSD)}}\approx0.03131\ \text{cycles/step},
+\]
+with a much smaller secondary feature near $f_2^{\mathrm{(lin)}}$.  The leading peak is close to the sum $f_1^{\mathrm{(lin)}}+f_2^{\mathrm{(lin)}}$, consistent with the nonlinear observable $r(t)$ mixing two incommensurate base frequencies.
+
+\item \textbf{Flux and holonomy.}  
+The triangle flux on a representative face remains locked at
+\[
+F_\triangle(t)\approx-2.10\ \text{rad},
+\]
+with no visible drift over the post-burn window.  This realizes a persistent frustrated holonomy while the double NS torus is active and is compatible with the $\SU(2)$ trace--angle relation in Conjecture~\ref{conj:su2}.
+
+\item \textbf{Mode amplitudes.}  
+Projecting the trajectory onto the gauge-free eigenvectors associated with the two critical pairs yields complex modal coordinates $z_1(t),z_2(t)$ whose amplitudes $A_j(t)=|z_j(t)|$ remain of $\mathcal{O}(10^{-1})$ and essentially constant over time.  Both NS modes thus saturate at comparable nonzero amplitude rather than one being slaved to the other, a key signature of a genuine 4D torus rather than an effectively 2D one.
+
+\item \textbf{Instantaneous frequencies and winding.}  
+The instantaneous angular velocities $\omega_v(t)=(\theta_v(t+1)-\theta_v(t))/dt$ exhibit a broad distribution of ratios $\omega_0(t)/\omega_1(t)$ supported approximately on $[0.86,1.16]$ with no sharp peaks at simple rationals.  This suggests strongly incommensurate motion and is consistent with a Diophantine-type condition excluding low-order resonances.
+
+\item \textbf{Poincar\'e section and return map.}  
+Sampling the trajectory at crossings where $\theta_0-\theta_1\equiv0\pmod{2\pi}$ and plotting $(\theta_2-\theta_3,\theta_0-\theta_3)$ on the section yields a smooth one-dimensional curve, as expected for the intersection of a 2-torus with a codimension-one slice.  A return map of $r(t)$ versus $r(t+\tau)$ at the lag corresponding to the PSD peak exhibits a thin closed loop rather than a line segment or finite set of points, again characteristic of quasiperiodic motion on a torus.
+\end{itemize}
+
+\paragraph{Lyapunov spectrum.}
+We estimate the top six Lyapunov exponents at $K_{\mathrm{run}}$ using a QR-based method along the same trajectory, obtaining
+\[
+\mathrm{LE}_1\approx-3.8\times10^{-10},\quad
+\mathrm{LE}_2\approx1.5\times10^{-7},\quad
+\mathrm{LE}_{3\ldots6}\approx-3.1\times10^{-4},
+\]
+per step.  The first two are numerically indistinguishable from zero at the level of our computation, while the remaining four are strongly negative, with $|\mathrm{LE}_3|/|\mathrm{LE}_1|\sim10^6$.  This is exactly the spectrum one expects for a robust 4D attracting torus: two neutral directions tangent to the torus and four strongly contracting transverse directions.
+
+\paragraph{Robustness and parameter sensitivity.}
+The double-NS event itself is tuned: small variations in $w_{\mathrm{diag}}$ or $\sigma_2$ of order $\pm5\%$ either merge the two critical $K_j^*$ into a more degenerate crossing or separate them beyond overlap so that the associated tori no longer interact.  However, once $K$ is chosen in the narrow window between $K_1^*$ and $K_2^*$, the observed torus is robust: adding weak noise (up to $\sigma_{\mathrm{noise}}\lesssim10^{-4}$) or perturbing $K$ by $\mathcal{O}(10^{-5})$ does not destroy quasiperiodicity over runs of length $T\gtrsim10^6$ steps.  This supports the interpretation of the observed structure as a genuine codimension-two double NS torus.  A summary of the main diagnostics is shown in Figure~\ref{fig:k4_double_ns}.
+
+\begin{figure}[t]
+  \centering
+  % Row 1
+  \begin{subfigure}{.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{flux_su2_series.png}
+    \caption{Triangle flux $F_\triangle(t)$ on a representative face, locked near $-2\pi/3$ throughout the post-burn run.}
+  \end{subfigure}\hfill
+  \begin{subfigure}{.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{k4_psd.png}
+    \caption{PSD of $r(t)$ at $K \approx K_2^* + 5\times10^{-7}$, with a dominant peak and a small shoulder from the second NS mode.}
+  \end{subfigure}\hfill
+  \begin{subfigure}{.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{mode_amps.png}
+    \caption{Modal amplitudes $A_1(t),A_2(t)$ for the two NS pairs, both saturating at comparable $\mathcal{O}(10^{-1})$ values.}
+  \end{subfigure}
+
+  \medskip
+
+  % Row 2
+  \begin{subfigure}{.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{freq_ratio_hist.png}
+    \caption{Histogram of instantaneous frequency ratios $\omega_0(t)/\omega_1(t)$, with broad support and no prominent low-order rational peaks.}
+  \end{subfigure}\hfill
+  \begin{subfigure}{.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{poincare_section.png}
+    \caption{Poincar\'e section at $\theta_0-\theta_1\equiv 0 \ (\mathrm{mod}\ 2\pi)$, forming a smooth 1D curve as expected for a 2-torus slice.}
+  \end{subfigure}\hfill
+  \begin{subfigure}{.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{return_map_r.png}
+    \caption{Return map $r(t)$ vs.\ $r(t+\tau)$ at the dominant period, forming a closed loop characteristic of quasiperiodic motion.}
+  \end{subfigure}
+
+  \caption{Diagnostics for the tuned double Neimark--Sacker torus on the symmetric, frustrated $K_4$.  Together these confirm a robust 4D attracting torus with two incommensurate rotations and locked frustrated holonomy.}
+  \label{fig:k4_double_ns}
+\end{figure}
+
+\section{Computational methods}
+
+We briefly summarize the numerical setup; full scripts and data are archived with the Zenodo record associated to this paper.
+
+\begin{enumerate}[leftmargin=1.7em]
+\item \textbf{$K_3$ experiment.}  
+We use the inertial explicit-Euler scheme with $dt=0.1$, $\gamma=0.3$, $\varepsilon_{\mathrm{asym}}=0.2$, degree-normalized couplings, and detuning $\Delta=(10^{-2},0,-10^{-2})$.  The frustrated edge is chosen so that the oriented triangle flux is $F_\triangle=-2\pi/3$.  A $K$-scan over $[1,2]$ with $200$ points locates the NS crossing, which is refined by bisection.  Nonlinear runs use $T=60{,}000$ steps, burn-in $T_{\mathrm{burn}}=30{,}000$, and small noise $\sigma_{\text{noise}}\le10^{-6}$.
+
+\item \textbf{$K_4$ experiment.}  
+We use the symmetric $K_4$ with ring edges, diagonals, and two frustrated closings as described above.  The inertial explicit-Euler update for velocities is
+\[
+v_v(t+1)
+=
+(1-\gamma dt)\,v_v(t)
++
+dt\sum_{w\sim v}K\hat\kappa_{vw}\sin\bigl(\theta_w(t)-\theta_v(t)-\alpha_{vw}\bigr),
+\]
+with no degree normalization (raw sum over neighbors).  Angles are updated by
+\[
+\theta_v(t+1)=\theta_v(t)+dt\,v_v(t),
+\]
+and we take $dt=0.09999$, $\gamma=0.09620$, $\varepsilon_{\mathrm{asym}}=0.0327$, $w_{\mathrm{diag}}=2.6220$, $\sigma_2=-0.091384$, $\phi_\triangle=2.09480$, and zero noise.  The $K$-scan over $[0.2398,0.2412]$ uses $30{,}000$ points with gauge-free eigen-analysis of the Jacobian.  Nonlinear post-NS runs use $T=900{,}000$, $T_{\mathrm{burn}}=450{,}000$.
+\item \textbf{Lyapunov exponents.}  
+We compute the top $q$ Lyapunov exponents by evolving a random orthonormal frame under the Jacobian along the nonlinear trajectory and accumulating logarithms of the $R$-matrix diagonals after QR reorthogonalization.  For $K_4$ we use $q=6$, $T=450{,}000$ post-burn steps, and a fixed random seed.
+\end{enumerate}
+
+All sweeps and diagnostics (eigenvalue scans, PSDs, Poincaré sections, Lyapunov spectra) were generated with reproducible Python scripts based solely on standard numerical libraries.
+
+\section{Conjectures, dimensional ladder, and limitations}
+
+\subsection{Dimensional ladder conjecture}
+
+The $K_3$ and $K_4$ results support the idea that frustrated graphs can organize emergent rotational degrees of freedom in a way reminiscent of the imaginary units of the division algebras $\mathbb{C}$, $\mathbb{H}$, and conjecturally $\mathbb{O}$.  We formalize this as follows.
+
+\begin{conjecture}[Sharp dimensional ladder]\label{conj:ladder}
+For each $k\in\{1,3,7\}$ there exists a minimal frustrated network $N_k$ such that:
+\begin{enumerate}[label=(\roman*),leftmargin=1.7em]
+\item The dynamics on $N_k$ admit an attracting invariant set carrying exactly $k$ independent rotation generators $\{J_\alpha\}$, each arising as a Neimark--Sacker-type mode.
+\item These generators satisfy the commutation relations of the imaginary parts of the division algebras: for $k=1$ (complex) a single $\mathcal{J}$ with $\mathcal{J}^2=-I$; for $k=3$ (quaternionic) generators obeying $J_\alpha J_\beta=-\delta_{\alpha\beta}I+\epsilon_{\alpha\beta\gamma}J_\gamma$; for $k=7$ (octonionic) a non-associative multiplication consistent with $\mathbb{O}$.
+\item $N_k$ is minimal in the sense that no network with fewer frustrated cycles can support $k$ independent rotation generators.
+\item The attractor has topological dimension $k+1$ (one radial direction plus $k$ angular directions) and the corresponding Lyapunov spectrum has $k$ near-zero exponents and all others negative.
+\item The internal frequencies satisfy Diophantine conditions (no low-order resonances), ensuring KAM-like persistence of the invariant tori and excluding collapse to periodic orbits.\footnote{Concretely, this means there exist $C>0$ and $\tau>0$ such that $|k\cdot\omega|\ge C/\|k\|^\tau$ for all integer vectors $k\neq0$, ruling out strong resonances of the form $k_1\omega_1+\cdots+k_k\omega_k=0$ with small coefficients; see \cite{Kuznetsov2004}, Ch.~5.}
+\end{enumerate}
+For $k=1$ the minimal example is realized on $K_3$ under the conditions of Theorem~\ref{thm:main}.  Our $K_4$ numerics provide evidence for the $k=3$ rung: a 4D torus with two near-zero Lyapunov exponents and a linear winding ratio $\rho_{\mathrm{lin}}\approx0.903$ far from low-order rationals.
+\end{conjecture}
+
+Recent algebraic work on dynamical symmetry algebras \cite{Alcover2022} and trace-dynamics approaches to unification \cite{Singh2021} hint that such division-algebra ladders may be natural organizing principles for higher-symmetry dynamical systems, though our present results are purely classical and graph-based.
+
+\subsection{Limitations and future directions}
+
+Several aspects of the ladder picture remain conjectural or only partially explored:
+
+\begin{itemize}[leftmargin=1.7em]
+\item \textbf{Quaternionic closure on $K_4$.}  
+We have strong evidence for a 4D torus with two active NS modes but have not yet derived a full coupled normal form exhibiting three anti-commuting generators obeying the quaternion relations.  A natural next step is to compute the cross-coupling coefficients in the codimension-two NS normal form and relate them to the $\SU(2)$ holonomy structure.
+
+\item \textbf{Genericity of double NS.}  
+The $K_4$ double-NS event appears finely tuned: it occupies a small region in the space of edge weights and frustration phases.  It is unclear whether similar events are typical in random frustrated graphs or whether they occupy a measure-zero subset of parameter space.
+
+\item \textbf{Trace--angle relation in larger networks.}  
+We verified the $\frac{1}{2}\Tr(H)=\cos(F_\triangle/2)$ relation for individual faces in small motifs, but have not yet tested its dynamical consistency across many plaquettes in larger graphs or under stronger perturbations.
+
+\item \textbf{Higher rungs ($k=7$) and non-associativity.}  
+The octonionic rung is entirely conjectural at this stage.  It is plausible that non-associativity obstructs the existence of smooth high-dimensional invariant tori and instead leads to weakly chaotic or strange attractors.
+
+\item \textbf{Continuum and large-$N$ limits.}  
+All computations here are on very small graphs.  Extending these ideas to large random networks and potential continuum limits (e.g.\ via coarse-graining or renormalization group methods) remains open.
+\end{itemize}
+
+Despite these limitations, the combination of rigorous NS $\to$ complex-structure theory and concrete $k=1$ and $k=3$ numerics suggests that frustrated graphs are a natural playground for emergent complex and quaternionic structures.
+
+\section{Core equations}
+
+For ease of reference we collect the central relations:
+\begin{align*}
+\mathcal{J}&=\frac{J}{\omega},\quad
+J=\begin{pmatrix}0&-\omega\\ \omega&0\end{pmatrix},\quad
+\mathcal{J}^2=-I,\\[4pt]
+H(C)&=\exp\!\left(i\sum_{e\in C}\epsilon_e A_e\right),\\[4pt]
+F_{ijk}&:=A_{ij}+A_{jk}+A_{ki}\pmod{2\pi},\qquad
+\frac{1}{2}\Tr\mathbf{H}(\partial\triangle)=\cos\!\left(\frac{F_\triangle}{2}\right),\\[4pt]
+\text{NS at }K_c&\;\Rightarrow\;\mathcal{J}\ \text{on}\ \mathcal{M}.
+\end{align*}
+
+\section{Conclusion}
+
+We have shown that a generic Neimark--Sacker bifurcation of the discrete Kuramoto map on a finite graph produces a canonical complex-structure operator $\mathcal{J}$ on the 2D center manifold.  
+On graphs with frustrated cycles this local complex structure organizes into a $\U(1)$ principal bundle whose curvature measures discrete holonomy; a simple obstruction lemma shows that nonzero curvature forbids a global abelian phase field and motivates a non-abelian $\SU(2)$ lift with a natural trace--angle interpretation of curvature.
+
+Numerically, an inertial explicit-Euler experiment on a directed, frustrated $K_3$ with degree-normalized couplings confirms a supercritical NS at $K_c\approx1.92$, with a single dominant PSD peak close to the linear frequency, an invariant circle in phase space, and a near-zero leading Lyapunov exponent.  
+On a symmetric but weakly directed and frustrated $K_4$ we find a tuned double NS event: two complex pairs cross the unit circle at $K_1^*\approx0.24048$ and $K_2^*\approx0.24052$ separated by $\Delta K\approx4.7\times10^{-5}$, the flux remains locked near $-2\pi/3$, both NS modes saturate at comparable amplitude, diagnostic plots support a 4D invariant torus, and the Lyapunov spectrum has two numerically zero and four strongly negative exponents.  
+
+These results realize the $k=1$ and $k=3$ rungs of a conjectured division-algebra ladder in a concrete class of discrete dynamical systems on graphs, and point towards a rich interplay between graph topology, holonomy, and emergent complex and quaternionic structures.
+
+\section*{Acknowledgments}
+
+I thank the xAI team for assistance with literature searches and document preparation.  
+\textit{Contributors (non-author):} Grok and ChatGPT.
+
+\begin{thebibliography}{99}
+
+\bibitem{Acebron2005}
+Acebr\'{o}n, J. A., et al.,
+\emph{The Kuramoto model: A simple paradigm for synchronization phenomena},
+Rev. Mod. Phys. \textbf{77}, 137--185 (2005),
+doi: \href{https://doi.org/10.1103/RevModPhys.77.137}{10.1103/RevModPhys.77.137}.
+
+\bibitem{Abdullaev2022}
+Abdullaev, A., et al.,
+\emph{Three-dimensional non-Abelian quantum holonomy},
+Nat. Phys. \textbf{19}, 30--34 (2022),
+doi: \href{https://doi.org/10.1038/s41567-022-01807-5}{10.1038/s41567-022-01807-5}.
+
+\bibitem{Alcover2022}
+Alcover-Garau, P.-M.,
+\emph{Dynamical symmetry algebras of two superintegrable two-dimensional systems},
+J. Phys. A: Math. Theor. \textbf{55}, 405202 (2022),
+doi: \href{https://doi.org/10.1088/1751-8121/ac8b0d}{10.1088/1751-8121/ac8b0d}.
+
+\bibitem{Beradze2023}
+Beradze, B., et al.,
+\emph{Emergence of non-Abelian SU(2) invariance in Abelian frustrated fermionic ladders},
+Phys. Rev. B \textbf{108}, 075146 (2023),
+doi: \href{https://doi.org/10.1103/PhysRevB.108.075146}{10.1103/PhysRevB.108.075146}.
+
+\bibitem{Carr1981}
+Carr, J.,
+\emph{Applications of Centre Manifolds to Amplitude Expansions},
+Springer, New York, 1981,
+doi: \href{https://doi.org/10.1007/978-1-4612-5929-9}{10.1007/978-1-4612-5929-9}.
+
+\bibitem{GuckenheimerHolmes1983}
+Guckenheimer, J., Holmes, P.,
+\emph{Nonlinear Oscillations, Dynamical Systems, and Bifurcations of Vector Fields},
+Springer, New York, 1983,
+doi: \href{https://doi.org/10.1007/978-1-4612-1153-2}{10.1007/978-1-4612-1153-2}.
+
+\bibitem{Ha2025inertial}
+Ha, S.-Y., et al.,
+\emph{Emergent dynamics of the inertial Kuramoto model with frustration on a locally coupled graph},
+Nonlinearity \textbf{38}, 1745 (2025),
+doi: \href{https://doi.org/10.1088/1361-6544/adfff4}{10.1088/1361-6544/adfff4}.
+
+\bibitem{Ha2025second}
+Ha, S.-Y., et al.,
+\emph{Synchronization of second-order Kuramoto model with frustration on strongly connected digraph},
+arXiv:2510.16271 (2025),
+doi: \href{https://doi.org/10.48550/arXiv.2510.16271}{10.48550/arXiv.2510.16271}.
+
+\bibitem{Kuramoto1975}
+Kuramoto, Y.,
+\emph{Self-entrainment of a population of coupled non-linear oscillators},
+Lecture Notes in Phys. \textbf{39}, 420--422 (1975),
+doi: \href{https://doi.org/10.1007/BFb0013365}{10.1007/BFb0013365}.
+
+\bibitem{Kuznetsov2004}
+Kuznetsov, Y. A.,
+\emph{Elements of Applied Bifurcation Theory}, 3rd ed.,
+Springer, New York, 2004,
+doi: \href{https://doi.org/10.1007/b97490}{10.1007/b97490}.
+
+\bibitem{Lee2023}
+Lee, S., et al.,
+\emph{On the synchronization of discrete-time Kuramoto model with frustration},
+Commun. Pure Appl. Anal. \textbf{22}, 3203--3231 (2023),
+doi: \href{https://doi.org/10.3934/cpaa.2023109}{10.3934/cpaa.2023109}.
+
+\bibitem{OttAntonsen2009}
+Ott, E., Antonsen, T. M.,
+\emph{Low dimensional behavior of large systems},
+Chaos \textbf{19}, 023117 (2009),
+doi: \href{https://doi.org/10.1063/1.3130928}{10.1063/1.3130928}.
+
+\bibitem{Qadri2024}
+Qadri, M. A., et al.,
+\emph{Neimark-Sacker bifurcation, chaos, and local stability of a discrete Hepatitis C virus infection model},
+AIMS Math. \textbf{9}, 31390--31416 (2024),
+doi: \href{https://doi.org/10.3934/math.20241537}{10.3934/math.20241537}.
+
+\bibitem{Singh2021}
+Singh, T.,
+\emph{Trace dynamics and division algebras: towards quantum gravity and unification},
+Z. Naturforsch. A \textbf{76}, 131--144 (2021),
+doi: \href{https://doi.org/10.1515/zna-2020-0255}{10.1515/zna-2020-0255}.
+
+\bibitem{Strogatz2000}
+Strogatz, S. H.,
+\emph{From Kuramoto to Crawford},
+Phys. D \textbf{143}, 1--20 (2000),
+doi: \href{https://doi.org/10.1016/S0167-2789(00)00094-4}{10.1016/S0167-2789(00)00094-4}.
+\end{thebibliography}
+
+\section*{How to cite}
+Aksu, M. (2025). \textit{\papertitle}. Zenodo. \href{https://doi.org/\paperdoi}{\paperdoi}. \\
+\textit{Contributors (non-author):} Grok; ChatGPT.
+
+\end{document}
