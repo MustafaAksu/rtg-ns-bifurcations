@@ -1,0 +1,25 @@
+{
+  "config": "./configs/k4_quat_baseline.yaml",
+  "K_run": 0.24052455240517642,
+  "T": 200000,
+  "burn": 100000,
+  "subsample": 100,
+  "gaps": {
+    "0": {
+      "mean_abs_gap": 0.4917509975572293,
+      "std_gap": 0.0
+    },
+    "1": {
+      "mean_abs_gap": 1.0719512331114345e-06,
+      "std_gap": 0.0
+    },
+    "2": {
+      "mean_abs_gap": 0.00848932347568132,
+      "std_gap": 0.0
+    },
+    "3": {
+      "mean_abs_gap": 0.5001768108567238,
+      "std_gap": 0.0
+    }
+  }
+}
